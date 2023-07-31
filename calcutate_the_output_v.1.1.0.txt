@@ -1,0 +1,406 @@
+from functools import partial
+import math # Module for some special math operations
+import multiprocessing # Module for processing two or more code simultaneously
+import os # Module for clear_console
+import random # You'll know what if means, if you have at least two brain cells
+import sys # Module for clearing lines
+import time # Module for measuring time
+
+record_time = []
+timer_stop = [False] # List whose length is always 1 more than record_time, all elements initially being false
+levels = [[2, [1, 5], [1, 5], 10], [2, [2, 4], [2, 5], 10], [3, [2, 3], [2, 5], 7], [3, [3, 4], [2, 5], 10], [3, [3, 4], [3, 5], 10], [3, [3, 4], [3, 5], 7]] # Degree, coefficient type, x type, time // Length of this list is 6
+level_fail = False
+question_right = False
+number_of_questions = 10
+glob = []
+x_global = []
+list_rnn_global = []
+list_ri_global = []
+list_rf_global = []
+
+# Function for clearing the entire console
+def clear_console():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+# Function for clearing a line
+def clear_line():
+    # Move the cursor to the beginning of the line
+    sys.stdout.write('\r')
+    # Clear the line
+    sys.stdout.write("\033[K")
+    sys.stdout.flush()
+
+# Function for the timer
+def timer_function(time_unit, timer_stoptime):
+    timer_len = len(record_time)
+    record_time.append(0)
+    
+    while timer_stop[timer_len] == False:
+        time.sleep(time_unit)
+        record_time[timer_len] += time_unit
+        print(f'Timer {timer_len}: {record_time}', end='\r', flush = True)
+        
+        # Automatically stopping the timer when the player gets a question right
+        if question_right == True:
+            timer_stop[timer_len] = True
+        
+        # Stopping the timer and showing the failure of the level
+        if record_time[timer_len] >= timer_stoptime:
+            timer_stop[timer_len] = True
+            level_fail = True
+            
+        # Loop that maintains the variable timer_stop
+        while len(record_time) + 1 < len(timer_stop):
+            timer_stop.pop()
+
+        while len(record_time) + 1 > len(timer_stop):
+            timer_stop.append(False)
+
+# Reset all timers            
+def reset_timers():
+    record_time = []
+    timer_stop = [False]
+
+# Show the sign of a number properly
+def show_sign(num):
+    if num >= 0:
+        return ''
+    
+    if num < 0:
+        return '-'
+        
+def noshow_sign(sth):
+    s = str(sth)
+    
+    if len(s) > 0:
+        if s[0] == '-':
+            final = s[1:]
+            
+        else:
+            final = s
+        
+    else:
+        final = s
+    
+    return final
+        
+def show_sign_supreme(num):
+    if num >= 0:
+        return '+'
+    
+    if num < 0:
+        return '-'    
+
+# Do not show the coefficient 1
+def hide_one(num):
+    if num == 1 or num == -1:
+        return ''
+        
+    elif num == '1' or num == '-1' or num == '1/1' or num == '-1/1':
+        return ''
+    
+    else:
+        return str(num)
+
+def noshow_div_one(sth):
+    s = str(sth)
+    
+    if len(s) >= 3:
+        if s[-1] == '1' and s[-2] == '/':
+            final = s[:-2]
+        
+        else:
+            final = s
+        
+    else:
+        final = s
+    
+    return final    
+
+# Pick a random natural number under a
+def rnn(a):
+    random_natural_number = random.choice(range(1, a))
+    return random_natural_number
+
+# Pick a random integer in (-a, a)
+def ri(a):
+    nonzero = list(range(- a + 1, 0)) + list(range(1, a))
+    random_int = random.choice(nonzero)
+    return random_int
+
+# Pick a random fraction, whose numerator and denominator are both integers in (-a, a)
+def rf(a):
+    rf_list = []
+    random_natural_number_f = random.choice(range(1, a))
+    nonzero_f = list(range(- a + 1, 0)) + list(range(1, a))
+    random_int_f = random.choice(nonzero_f)
+    gcd = math.gcd(int(random_natural_number_f), abs(int(random_int_f)))
+    random_fraction = random_natural_number_f / random_int_f
+    rf_list.append(random_fraction)
+    rf_list.append(f'{show_sign(random_int_f)}{int(random_natural_number_f / gcd)}/{abs(int(random_int_f / gcd))}')
+    
+    return rf_list
+
+# Function for generating x    
+def generate_x(x_type):
+    if x_type[0] == 1:
+        x = rnn(x_type[1])
+        return x
+        
+    if x_type[0] == 2:
+        x = ri(x_type[1])
+        return x
+        
+    if x_type[0] == 3:
+        x = rf(x_type[1])[0]
+        return x
+
+# Function that creates a list of coefficients, only with natural numbers under a
+def list_rnn(a, deg):
+    global list_rnn_global
+    
+    for i in range(deg + 1):
+        list_rnn_global.append(rnn(a))
+        
+# Function that creates a list of coefficients, only with integers in (-a, a) 
+def list_ri(a, deg):
+    global list_ri_global
+    
+    for i in range(deg + 1):
+        list_ri_global.append(ri(a))
+
+# Function that creates a list of coefficients, only with fractions, each of whose numerator and denominator are both integers in (-a, a)     
+def list_rf(a, deg):
+    global list_rf_global
+    
+    list_of_rf = []
+    list_of_rf_sh = []
+    
+    for i in range(deg + 1):
+        ref_list = rf(a)
+        list_of_rf.append(ref_list[0])
+        list_of_rf_sh.append(ref_list[1])
+
+    list_rf_global.append(list_of_rf)
+    list_rf_global.append(list_of_rf_sh)
+
+# Function for generating the list depending on the properties of a level
+def generate_list(list_type, deg):
+    global x_global
+    x_global = []
+    
+    if list_type[0] == 1: # for natural numbers
+        list_rnn(list_type[1], deg)
+        
+        for i in range(2):
+            x_global.append(list_rnn_global)
+        
+    if list_type[0] == 2: #for integers
+        list_ri(list_type[1], deg)
+        
+        for i in range(2):
+            x_global.append(list_ri_global)
+        
+    if list_type[0] == 3:
+        list_rf(list_type[1], deg)
+        x_global = list_rf_global
+
+# Compute the products
+def compute_function_output(list_of_coefficients, x):
+    list_of_products=[]
+    
+    for i in range(len(list_of_coefficients)):
+        list_of_products.append(list_of_coefficients[i] * (x ** i))
+    
+    return sum(list_of_products)
+
+# Function dedicated to superscripts
+def superscript(num):
+    super_scripts = ['⁰', '', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹']
+    return super_scripts[num]
+
+def supreme_float(sme_str):
+    ret_var = None
+    some_str = str(sme_str)
+    
+    if len(some_str) == 0:
+        ret_var = None
+        
+    elif some_str[0] == '-':
+        the_float = float(some_str[1:])
+        ret_var = -1 * the_float
+        
+    else:
+        ret_var = float(some_str)
+    
+    return ret_var
+    
+# Function for converting the user's answer (input) to a string that is easier for the computer to read    
+def answer_to_the_computer(some_str):
+    ret_var = None
+    numer_ator = []
+    denomin_ator = []
+    isin_numer_ator = True
+    
+    if some_str.count('/') >= 2:
+        ret_var = 'b'
+        
+    if some_str.count('/') == 1:
+        for i in range(len(some_str)):
+            if some_str[i] != '/' and isin_numer_ator == True:
+                numer_ator.append(some_str[i])
+                
+            elif some_str[i] == '/':
+                isin_numer_ator = False
+                
+            else:
+                denomin_ator.append(some_str[i])
+            
+        num = ''.join(str(numer_ator) for numer_ator in numer_ator)
+        den = ''.join(str(denomin_ator) for denomin_ator in denomin_ator)
+        the_fraction = supreme_float(num) / supreme_float(den)
+        the_fraction_rounded = round(the_fraction, 4)
+        ret_var = str(the_fraction_rounded)
+            
+    else:
+        ret_var = str(round(float(some_str), 4))
+    
+    return ret_var
+    
+# Function for creating a list of coefficients
+def create_loc(level):
+    global glob
+    global x_global
+    global list_rnn_global
+    global list_ri_global
+    global list_rf_global
+    
+    # Reset all lists
+    glob = []
+    x_global = []
+    list_rnn_global = []
+    list_ri_global = []
+    list_rf_global = []
+    
+    level_properties = levels[level]
+    generate_list(level_properties[1], level_properties[0])
+    loc = x_global[0]  # Extract the list of coefficients
+    loc_show = x_global[1]  # Extract the list of formatted strings
+    x = generate_x(level_properties[2])
+    given_time = level_properties[3]
+    text_shown = f' {show_sign_supreme(loc[0])} {noshow_div_one(noshow_sign(loc_show[0]))}'
+    
+    # Generating the text that will be shown to the player
+    for i in range(1, level_properties[0] + 1):
+        text_shown = f'{show_sign_supreme(loc[i])} {noshow_sign(hide_one(noshow_div_one(loc_show[i])))}x{superscript(i)}' + text_shown
+    
+    if text_shown[0] == '+':
+        text_shown = text_shown[1:]
+    
+    glob.append(text_shown)
+    glob.append(x)
+    glob.append(loc)
+    
+# Interface related to giving the problems and feedback
+def user_interface_basic(level):
+    global glob
+    
+    create_loc(level)
+    loc = []
+    text_shown = glob[0]
+    x_given = glob[1]
+    loc = glob[2]
+    ans = compute_function_output(loc, x_given)
+    i = input(f'\n\n\n\nLet f(x) = {text_shown}.\n\nFind the value of f({x_given}).\n\n')
+    
+    if answer_to_the_computer(i) == str(round(ans, 4)):
+        question_right = True
+        print("Correct!\n\n")
+        time.sleep(1)
+        clear_console()
+        
+    else:
+        question_right = False
+        level_fail = True
+        print("WRONG... did you have Sexy Beer last night?\n\n") # Maybe change this one before putting it on Facebook...
+        time.sleep(1)
+        clear_console()
+
+# Interface at the start of the game
+def user_interface_start():    
+    paku = True
+    paku_list = []
+    
+    while paku == True:
+        print("WELCOME TO THE GAME OF COMPUTING THE OUTPUT OF A FUNCTION!")
+        time.sleep(1)
+        x = input("\n\nInput a LEVEL, an integer between 0 and 2, inclusive.          ")
+        digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+        
+        if x == '':
+            paku = True
+            xx = 3.2
+            print('\n\nTry again...\n\n')
+            time.sleep(1)
+            clear_console()
+            paku_list = []
+        
+        else:
+            for i in range(len(x)):
+                if x[i] not in digits:
+                    paku_list.append('not')
+                    print('\n\nTry again...\n\n')
+                    time.sleep(1)
+                    clear_console()
+                    
+                else:
+                    paku_list.append('')
+        
+            if paku_list.count('not') == 0:
+                paku = False
+                xx = int(x)
+                paku_list = []
+            
+            else:
+                paku = True
+                xx = 3.2
+                paku_list = []
+    
+    while paku == False: 
+        if (math.floor(xx) == xx and xx >= 0) and xx < 4:
+            clear_console()
+            print("\n\n\n\nREADY?")
+            time.sleep(1)
+            print("\n\n𝑮𝙊!")
+            
+            for j in range(10):
+                user_interface_basic(xx)
+            
+            print("\n\n\n\nThanks for playing! 🙂")
+            time.sleep(5)
+            paku_list = []
+            clear_console()
+            paku = True
+        
+        elif (math.floor(xx) == xx and xx >= 4) and xx < 6:
+            print("The level you entered is going to be created soon. Try putting in another level. (Integer in [0, 2])")
+            time.sleep(2.5)
+            paku_list = []
+            clear_console()
+            paku = True
+        
+        else:
+            print("Try putting another level. It must be an integer in [0, 2].")
+            time.sleep(2.5)
+            paku_list = []
+            clear_console()
+            paku = True
+        
+
+
+
+
+
+# And the special moment where we invoke the function...
+while True:
+    user_interface_start()
