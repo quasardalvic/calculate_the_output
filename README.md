@@ -1,9 +1,8 @@
 # READ_ME
 
-
-CALCULATE THE OUTPUT! 
-(Repository Name on GitHub: calculate_the_output)
-A game that makes the player calculate the output of a given function and input.
+**CALCULATE THE OUTPUT! **
+* (Repository Name on GitHub: calculate_the_output)
+* A game that makes the player calculate the output of a given function and input.
 
 
 # FEATURES and CHANGELOG
