@@ -7,23 +7,23 @@
 
 # FEATURES and CHANGELOG
 
-* **Version 1.1.1**
+> **Version 1.1.1**
 * Some minor bugs were fixed.
 * Text that is shown to the player was replaced, as it can be offensive to some people.
 
-* **Version 1.1.0**
+> **Version 1.1.0**
 * Released: 2023-07-31
 * Functions with fractional coefficients/input added.
 * Levels 3, 4, and 5 were added, making it a total of 6.
 
-* **Version 1.0.0**
+> **Version 1.0.0**
 (Only .py and .exe versions are available)
 
 * Released: 2023-07-29
 * The game involves making the user calculate the function value with coefficients and input that are natural numbers, nonzero integers, or fractions (in which the numerator and denominator are nonzero integers), depending on the level.
 * Levels 0-2 exist. Level 0 is the easiest; level 2 is the hardest.
 
-* **Basic Properties that are never going to change**
+> **Basic Properties that are never going to change**
 * Coding Language: Python
 * Python installation is required to play.
 * There are no additional modules for the player to install.
