@@ -7,9 +7,12 @@
 
 # FEATURES and CHANGELOG
 
+> **Version 1.1.2**
+* Some text shown to the player was replaced, as it might offend some people.
+* More minor bugs were fixed.
+
 > **Version 1.1.1**
 * Some minor bugs were fixed.
-* Text that is shown to the player was replaced, as it can be offensive to some people.
 
 > **Version 1.1.0**
 * Released: 2023-07-31
