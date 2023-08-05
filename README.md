@@ -30,8 +30,7 @@
 
 > **Basic Properties that are never going to change**
 * Coding Language: Python
-* Python installation is required to play.
-* There are no additional modules for the player to install.
+* It's a maths game that lets the user practice basic operations.
 
 # FUTURE CHANGES THAT WILL BE MADE
 * Features that make the user calculate the function value with fractional coefficients and input.
